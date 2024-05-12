@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/utils/global.colors.dart';
-import 'package:flutter_application/view/home.view.dart';
+import 'package:flutter_application/view/register.view.dart';
+// import 'package:flutter_application/view/register.view.dart';
 import 'package:get/get.dart';
 
 class SplashView extends StatelessWidget {
@@ -10,7 +11,7 @@ class SplashView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Timer(const Duration(seconds: 2), () {
-      Get.to(HomeView(key: UniqueKey(),));
+      Get.to(RegisterView(key: UniqueKey(),));
     });
     return Scaffold(
       backgroundColor: GlobalColors.mainColor,

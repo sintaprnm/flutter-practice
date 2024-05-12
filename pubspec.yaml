@@ -40,6 +40,10 @@ dependencies:
   flutter_svg: ^2.0.10+1
   flutter_img: ^0.1.6+148
   animations: ^2.0.11
+  get_storage: ^2.1.1
+  flutter_secure_storage: ^9.0.0
+  logger: ^2.2.0
+  dio: ^5.4.3+1
   # fl_country_code_picker: ^0.1.9+1
   # flutter_country_picker: ^0.1.6
 
@@ -69,6 +73,7 @@ flutter:
   assets:
     - assets/images/logo1.png
     - assets/images/logo2.png
+    - assets/images/profiluser.jpeg
     - assets/icons/google.svg
     - assets/icons/twitter.svg
     - assets/icons/facebook.svg
