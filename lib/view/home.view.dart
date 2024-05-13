@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/utils/global.colors.dart';
 import 'package:flutter_application/view/login.view.dart';
+import 'package:flutter_application/view/userView/add_anggota.dart';
+import 'package:flutter_application/view/userView/list_anggota.dart';
 // import 'package:flutter_application/view/profile.view.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -22,10 +24,11 @@ class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
   late String username;
   late String email;
+  AnggotaDatas? anggotaDatas;
 
   static const List<Widget> _widgetOptions = <Widget>[
     // HomeListView(),
-    Text('Halaman Beranda'),
+    AnggotaList(),
     Text('Halaman Pinjaman'),
     TransactionHistoryView(),
     Text('Halaman Laporan'),
@@ -36,6 +39,7 @@ class _HomeViewState extends State<HomeView> {
   // void initState() {
   //   super.initState();
   //   goUser();
+  //   getAnggotaList();
   // }
 
   void _onItemTapped(int index) {
@@ -86,8 +90,41 @@ class _HomeViewState extends State<HomeView> {
             ],
           ),
         ),
+        //nyambungin ke add anggota
+        // Padding(
+        //   padding: const EdgeInsets.only(right: 16.0),
+        //   child: FloatingActionButton(
+        //     onPressed: () {
+        //       Navigator.push(
+        //         context,
+        //         MaterialPageRoute(builder: (context) => AddAnggota()),
+        //       );
+        //     },
+        //     child: const Icon(Icons.add),
+        //   ),
+        // ),
       ],
     );
+  }
+
+  Future<void> getAnggotaList() async {
+    try {
+      final response = await dio.get(
+        '$apiUrl/anggota',
+        options: Options(
+          headers: {'Authorization': 'Bearer ${myStorage.read('token')}'},
+        ),
+      );
+      Map<String, dynamic> responseData = response.data;
+      print(responseData);
+      setState(() {
+        anggotaDatas = AnggotaDatas.fromJson(responseData);
+      });
+    } on DioError catch (e) {
+      if (kDebugMode) {
+        print('Error fetching anggota list: ${e.response?.statusCode} - ${e.response?.data}');
+      }
+    }
   }
 
   @override
@@ -122,6 +159,16 @@ class _HomeViewState extends State<HomeView> {
         unselectedItemColor: Colors.grey,
         selectedItemColor: GlobalColors.mainColor,
         onTap: _onItemTapped,
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            // ignore: prefer_const_constructors
+            MaterialPageRoute(builder: (context) => AddAnggota()),
+          );
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
