@@ -168,7 +168,7 @@ class _HomeViewState extends State<HomeView> {
             MaterialPageRoute(builder: (context) => AddAnggota()),
           );
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.pink),
       ),
     );
   }

@@ -4,7 +4,7 @@ import 'package:flutter_application/view/login.view.dart';
 import 'package:flutter_application/view/userView/add_anggota.dart';
 import 'package:flutter_application/view/register.view.dart';
 import 'package:flutter_application/view/splash.view.dart';
-import 'package:flutter_application/view/userView/edit_anggota.dart';
+// import 'package:flutter_application/view/userView/edit_anggota.dart';
 import 'package:flutter_application/view/userView/list_anggota.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
@@ -38,7 +38,7 @@ class App extends StatelessWidget {
         GetPage(name: '/user', page: () => const HomeView(key: ValueKey('user_info'))),
         GetPage(name: '/anggota', page: () => const AddAnggota()),
         GetPage(name: '/anggota/detail', page: () => const AnggotaList()),
-        // GetPage(name: '/anggota/edit/anggotaId', page: () => const EditAnggotaPage()),
+        // GetPage(name: '/anggota/edit/', page: () => const EditAnggotaPage()),
       ],
     );
   }

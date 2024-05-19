@@ -1,6 +1,10 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/utils/global.colors.dart';
+import 'package:flutter_application/view/home.view.dart';
+// import 'package:flutter_application/utils/global.colors.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 
 class EditAnggotaPage extends StatefulWidget {
   final int anggotaId;
@@ -8,95 +12,124 @@ class EditAnggotaPage extends StatefulWidget {
   const EditAnggotaPage({Key? key, required this.anggotaId}) : super(key: key);
 
   @override
-  _EditAnggotaPageState createState() => _EditAnggotaPageState();
+  State<EditAnggotaPage> createState() => _EditAnggotaPageState();
 }
 
 class _EditAnggotaPageState extends State<EditAnggotaPage> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController nomorIndukController = TextEditingController();
+  TextEditingController namaController = TextEditingController();
+  TextEditingController alamatController = TextEditingController();
+  TextEditingController tglLahirController = TextEditingController();
+  TextEditingController noTeleponController = TextEditingController();
+
+  Anggota? anggota;
   final dio = Dio();
   final myStorage = GetStorage();
-  final myApiUrl = 'https://mobileapis.manpits.xyz/api';
-  final myFormKey = GlobalKey<FormState>();
-
-  late TextEditingController namaController;
-  late TextEditingController alamatController;
-  late TextEditingController tglLahirController;
-  late TextEditingController teleponController;
-
-  Map<String, dynamic>? anggotaData;
+  final _apiUrl = 'https://mobileapis.manpits.xyz/api';
+  DateTime? _tglLahir;
+  bool _isDetailLoaded = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize controllers
-    namaController = TextEditingController();
-    alamatController = TextEditingController();
-    tglLahirController = TextEditingController();
-    teleponController = TextEditingController();
-    // Fetch and display anggota data
-    _getAnggotaData();
+    getDetail();
   }
 
-  @override
-  void dispose() {
-    // Dispose controllers
-    namaController.dispose();
-    alamatController.dispose();
-    tglLahirController.dispose();
-    teleponController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _getAnggotaData() async {
+  Future<void> getDetail() async {
     try {
-      final response = await dio.get(
-        '$myApiUrl/anggota/${widget.anggotaId}',
+      final _response = await dio.get(
+        '$_apiUrl/anggota/${widget.anggotaId}',
         options: Options(
           headers: {'Authorization': 'Bearer ${myStorage.read('token')}'},
         ),
       );
+      Map<String, dynamic> responseData = _response.data;
+      print(responseData);
       setState(() {
-        anggotaData = response.data['data'];
-        // Set initial values for form fields
-        namaController.text = anggotaData?['nama'] ?? '';
-        alamatController.text = anggotaData?['alamat'] ?? '';
-        tglLahirController.text = anggotaData?['tgl_lahir'] ?? '';
-        teleponController.text = anggotaData?['telepon'] ?? '';
+        anggota = Anggota.fromJson(responseData);
+        nomorIndukController.text = anggota?.nomor_induk.toString() ?? '';
+        namaController.text = anggota?.nama.toString() ?? '';
+        alamatController.text = anggota?.alamat.toString() ?? '';
+        tglLahirController.text = anggota?.tgl_lahir.toString() ?? '';
+        noTeleponController.text = anggota?.telepon.toString() ?? '';
+        _tglLahir = DateFormat("yyyy-MM-dd").parse(tglLahirController.text);
       });
-    } catch (e) {
-      print('Error retrieving anggota data: $e');
+    } on DioException catch (e) {
+      print('${e.response} - ${e.response?.statusCode}');
     }
   }
 
-  Future<void> _updateAnggotaData() async {
+  void goEditUser() async {
     try {
-      final response = await dio.put(
-        '$myApiUrl/anggota/${widget.anggotaId}',
+      final _response = await dio.put(
+        '$_apiUrl/anggota/${widget.anggotaId}',
         data: {
+          'nomor_induk': nomorIndukController.text,
           'nama': namaController.text,
           'alamat': alamatController.text,
           'tgl_lahir': tglLahirController.text,
-          'telepon': teleponController.text,
+          'telepon': noTeleponController.text,
+          'status_aktif': anggota?.status_aktif
         },
         options: Options(
-          headers: {'Authorization': 'Bearer ${myStorage.read('token')}'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ${myStorage.read('token')}',
+          },
         ),
       );
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Anggota berhasil diperbarui')),
-        );
-        Navigator.pop(context); // Kembali ke halaman sebelumnya setelah berhasil memperbarui
-      } else {
-        print('Error updating anggota: ${response.data}');
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Gagal memperbarui anggota')),
-        );
-      }
-    } catch (e) {
-      print('Error updating anggota: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Gagal memperbarui anggota')),
-      );
+      print(_response.data);
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Anggota berhasil diedit!"),
+              content: Text('Yeay!'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeView()));
+                  },
+                ),
+              ],
+            );
+          });
+    } on DioException catch (e) {
+      print('${e.response} - ${e.response?.statusCode}');
+      showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text("Oops!"),
+              content: Text(e.response?.data['message'] ?? 'An error occurred'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text("OK"),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            );
+          });
+    }
+  }
+
+  Future<void> _selectDate() async {
+    DateTime? _picked = await showDatePicker(
+      context: context,
+      initialDate: _tglLahir!,
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (_picked != null) {
+      setState(() {
+        _tglLahir = _picked;
+        tglLahirController.text = DateFormat('yyyy-MM-dd').format(_picked);
+      });
     }
   }
 
@@ -104,53 +137,176 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Anggota'),
+        title: Text('Edit Anggota'),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: anggotaData != null
-            ? Form(
-                key: myFormKey,
-                child: Column(
+        padding: const EdgeInsets.all(16),
+        child: ListView(children: [
+          const SizedBox(height: 10),
+          Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextFormField(
+                  controller: nomorIndukController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Tolong masukkan nomor induk.';
+                    }
+                    return null;
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Nomor Induk',
+                    hintText: 'Masukkan nomor induk',
+                    prefixIcon: Icon(Icons.perm_identity, color: Colors.pink),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: namaController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Tolong masukkan nama.';
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Nama',
+                    hintText: 'Masukkan nama',
+                    prefixIcon: Icon(Icons.face, color: Colors.pink),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: alamatController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Tolong masukkan alamat.';
+                    }
+                    return null;
+                  },
+                  decoration: const InputDecoration(
+                    labelText: 'Alamat',
+                    hintText: 'Masukkan alamat',
+                    prefixIcon: Icon(Icons.house, color: Colors.pink),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: tglLahirController,
+                  decoration: const InputDecoration(
+                    labelText: 'Tanggal Lahir',
+                    hintText: 'Masukkan tanggal lahir',
+                    prefixIcon: Icon(Icons.calendar_today, color: Colors.pink),
+                  ),
+                  readOnly: true,
+                  onTap: _selectDate,
+                  validator: (value) {
+                    if (_tglLahir == null) {
+                      return 'Tolong masukkan tanggal lahir';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: noTeleponController,
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Tolong masukkan nomor telepon.';
+                    }
+                    return null;
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: 'Nomor Telepon',
+                    hintText: 'Masukkan nomor telepon',
+                    prefixIcon: Icon(Icons.phone, color: Colors.pink),
+                  ),
+                ),
+                const SizedBox(height: 70),
+                Row(
                   children: [
-                    TextFormField(
-                      controller: namaController,
-                      decoration: InputDecoration(
-                        labelText: 'Nama',
-                        hintText: anggotaData?['nama'] ?? '',
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState?.save();
+                            goEditUser();
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: GlobalColors.mainColor,
+                          elevation: 1,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 10),
+                        ),
+                        child: Text(
+                          'Edit Anggota',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 16,
+                            color: Colors.white,
+                          ),
+                        ),
                       ),
-                    ),
-                    TextFormField(
-                      controller: alamatController,
-                      decoration: InputDecoration(
-                        labelText: 'Alamat',
-                        hintText: anggotaData?['alamat'] ?? '',
-                      ),
-                    ),
-                    TextFormField(
-                      controller: tglLahirController,
-                      decoration: InputDecoration(
-                        labelText: 'Tanggal lahir',
-                        hintText: anggotaData?['tgl_lahir'] ?? '',
-                      ),
-                    ),
-                    TextFormField(
-                      controller: teleponController,
-                      decoration: InputDecoration(
-                        labelText: 'Telepon',
-                        hintText: anggotaData?['telepon'] ?? '',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _updateAnggotaData,
-                      child: const Text('Perbarui'),
                     ),
                   ],
                 ),
-              )
-            : const Center(child: CircularProgressIndicator()),
+              ],
+            ),
+          ),
+        ]),
       ),
     );
+  }
+}
+
+class Anggota {
+  final int id;
+  final int nomor_induk;
+  final String nama;
+  final String alamat;
+  final String tgl_lahir;
+  final String telepon;
+  final String? image_url;
+  final int? status_aktif;
+
+  Anggota({
+    required this.id,
+    required this.nomor_induk,
+    required this.nama,
+    required this.alamat,
+    required this.tgl_lahir,
+    required this.telepon,
+    this.image_url,
+    this.status_aktif,
+  });
+
+  factory Anggota.fromJson(Map<String, dynamic> json) {
+    final data = json['data'] as Map<String, dynamic>?;
+
+    if (data != null) {
+      final anggotaData = data['anggota'] as Map<String, dynamic>?;
+
+      if (anggotaData != null) {
+        return Anggota(
+          id: anggotaData['id'],
+          nomor_induk: anggotaData['nomor_induk'],
+          nama: anggotaData['nama'],
+          alamat: anggotaData['alamat'],
+          tgl_lahir: anggotaData['tgl_lahir'],
+          telepon: anggotaData['telepon'],
+          image_url: anggotaData['image_url'],
+          status_aktif: anggotaData['status_aktif'],
+        );
+      }
+    }
+
+    throw Exception('Failed to parse Anggota from JSON');
   }
 }

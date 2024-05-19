@@ -104,7 +104,7 @@ class _AnggotaListState extends State<AnggotaList> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 68),
               child: anggotaDatas == null || anggotaDatas!.anggotaDatas.isEmpty
-                  ? Text("Belum ada anggota")
+                  ? const Text("Belum ada anggota")
                   : ListView.builder(
                       itemCount: anggotaDatas!.anggotaDatas.length,
                       itemBuilder: (context, index) {
@@ -113,8 +113,8 @@ class _AnggotaListState extends State<AnggotaList> {
                           title: Text(anggota.nama),
                           subtitle: Row(
                             children: [
-                              Icon(Icons.phone, size: 14),
-                              SizedBox(width: 6),
+                              const Icon(Icons.phone, size: 14),
+                              const SizedBox(width: 6),
                               Text(anggota.telepon),
                             ],
                           ),
@@ -122,7 +122,7 @@ class _AnggotaListState extends State<AnggotaList> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit),
+                                icon: const Icon(Icons.edit),
                                 onPressed: () {
                                   // Navigate to edit anggota page with anggota ID
                                   Navigator.push(
@@ -134,7 +134,7 @@ class _AnggotaListState extends State<AnggotaList> {
                                 },
                               ),
                               IconButton(
-                                icon: Icon(Icons.delete_outline),
+                                icon: const Icon(Icons.delete_outline),
                                 onPressed: () {
                                   _confirmDeleteAnggota(anggota.id);
                                 },

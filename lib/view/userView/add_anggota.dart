@@ -1,7 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/utils/global.colors.dart';
 import 'package:flutter_application/view/home.view.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:intl/intl.dart';
 
 class AddAnggota extends StatefulWidget {
   const AddAnggota({super.key});
@@ -22,6 +24,22 @@ class _AddAnggotaState extends State<AddAnggota> {
   final alamatController = TextEditingController();
   final tglLahirController = TextEditingController();
   final teleponController = TextEditingController();
+  DateTime? _tglLahir;
+
+  Future<void> _selectDate() async {
+    DateTime? _picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(1950),
+      lastDate: DateTime.now(),
+    );
+    if (_picked != null) {
+      setState(() {
+        _tglLahir = _picked;
+        tglLahirController.text = DateFormat('yyyy-MM-dd').format(_picked);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +51,15 @@ class _AddAnggotaState extends State<AddAnggota> {
         key: _formKey,
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
+          child: ListView(
             children: [
+              const SizedBox(height: 10),
               TextFormField(
                 controller: nomorIndukController,
                 decoration: const InputDecoration(
                   labelText: 'Nomor Induk',
+                  hintText: 'Masukkan nomor induk',
+                  prefixIcon: Icon(Icons.perm_identity, color: Colors.pink),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -46,11 +67,15 @@ class _AddAnggotaState extends State<AddAnggota> {
                   }
                   return null;
                 },
+                keyboardType: TextInputType.number,
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: namaController,
                 decoration: const InputDecoration(
                   labelText: 'Nama',
+                  hintText: 'Masukkan nama',
+                  prefixIcon: Icon(Icons.face, color: Colors.pink),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -59,10 +84,13 @@ class _AddAnggotaState extends State<AddAnggota> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: alamatController,
                 decoration: const InputDecoration(
                   labelText: 'Alamat',
+                  hintText: 'Masukkan alamat',
+                  prefixIcon: Icon(Icons.house, color: Colors.pink),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -71,11 +99,16 @@ class _AddAnggotaState extends State<AddAnggota> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: tglLahirController,
                 decoration: const InputDecoration(
                   labelText: 'Tanggal Lahir (YYYY-MM-DD)',
+                  hintText: 'Masukkan tanggal lahir',
+                  prefixIcon: Icon(Icons.calendar_today, color: Colors.pink),
                 ),
+                readOnly: true,
+                onTap: _selectDate,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Tanggal Lahir wajib diisi';
@@ -83,10 +116,13 @@ class _AddAnggotaState extends State<AddAnggota> {
                   return null;
                 },
               ),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: teleponController,
                 decoration: const InputDecoration(
                   labelText: 'Telepon',
+                  hintText: 'Masukkan nomor telepon',
+                  prefixIcon: Icon(Icons.phone, color: Colors.pink),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -94,22 +130,31 @@ class _AddAnggotaState extends State<AddAnggota> {
                   }
                   return null;
                 },
+                keyboardType: TextInputType.number,
               ),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // Add Anggota API call
-                    _addAnggota(
-                      // nomorInduk: nomorIndukController.text,
-                      // nama: namaController.text,
-                      // alamat: alamatController.text,
-                      // tglLahir: tglLahirController.text,
-                      // telepon: teleponController.text,
-                    );
+                    _addAnggota();
                   }
-                  const SizedBox(height: 10);
                 },
-                child: const Text('Tambah'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: GlobalColors.mainColor,
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  padding: EdgeInsets.symmetric(vertical: 10),
+                ),
+                child: const Text(
+                  'Tambah',
+                  style: TextStyle(
+                    fontFamily: 'Poppins',
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ],
           ),
@@ -135,7 +180,7 @@ class _AddAnggotaState extends State<AddAnggota> {
         data: formData,
         options: Options(
           headers: {
-            'Content-Type': 'application/json', // Assuming JSON is expected
+            'Content-Type': 'application/json',
             'Authorization': 'Bearer ${myStorage.read('token')}',
           },
         ),
@@ -161,9 +206,7 @@ class _AddAnggotaState extends State<AddAnggota> {
                     tglLahirController.clear();
                     teleponController.clear();
                     Navigator.pop(context); // Close the dialog
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeView()));
-                    // Potentially navigate to anggota list here (optional)
-                    // Navigator.pushNamed(context, '/anggota');
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeView()));
                   },
                 ),
               ],
