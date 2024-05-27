@@ -1,7 +1,10 @@
+// ignore_for_file: use_build_context_synchronously, no_leading_underscores_for_local_identifiers, avoid_print, deprecated_member_use
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/utils/global.colors.dart';
 import 'package:flutter_application/view/home.view.dart';
+// import 'package:flutter_application/view/userView/list_anggota.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 
@@ -24,7 +27,6 @@ class _AddAnggotaState extends State<AddAnggota> {
   final alamatController = TextEditingController();
   final tglLahirController = TextEditingController();
   final teleponController = TextEditingController();
-  DateTime? _tglLahir;
 
   Future<void> _selectDate() async {
     DateTime? _picked = await showDatePicker(
@@ -35,7 +37,6 @@ class _AddAnggotaState extends State<AddAnggota> {
     );
     if (_picked != null) {
       setState(() {
-        _tglLahir = _picked;
         tglLahirController.text = DateFormat('yyyy-MM-dd').format(_picked);
       });
     }
@@ -145,7 +146,7 @@ class _AddAnggotaState extends State<AddAnggota> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  padding: EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.symmetric(vertical: 10),
                 ),
                 child: const Text(
                   'Tambah',

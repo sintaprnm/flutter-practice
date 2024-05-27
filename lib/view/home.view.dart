@@ -1,10 +1,13 @@
+// ignore_for_file: avoid_print, deprecated_member_use
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/utils/global.colors.dart';
 import 'package:flutter_application/view/login.view.dart';
+import 'package:flutter_application/view/transactionView/transaksi_anggota.dart' as transaksi;
+import 'package:flutter_application/view/userView/list_anggota.dart' as list;
 import 'package:flutter_application/view/userView/add_anggota.dart';
-import 'package:flutter_application/view/userView/list_anggota.dart';
 // import 'package:flutter_application/view/profile.view.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
@@ -24,13 +27,13 @@ class _HomeViewState extends State<HomeView> {
   int _selectedIndex = 0;
   late String username;
   late String email;
-  AnggotaDatas? anggotaDatas;
+  list.AnggotaDatas? anggotaDatas;
 
   static const List<Widget> _widgetOptions = <Widget>[
     // HomeListView(),
-    AnggotaList(),
-    Text('Halaman Pinjaman'),
-    TransactionHistoryView(),
+    Text('Halaman Beranda'),
+    list.AnggotaList(),
+    transaksi.TransactionAnggotaList(),
     Text('Halaman Laporan'),
     Text('Halaman Pengaturan'),
   ];
@@ -118,7 +121,7 @@ class _HomeViewState extends State<HomeView> {
       Map<String, dynamic> responseData = response.data;
       print(responseData);
       setState(() {
-        anggotaDatas = AnggotaDatas.fromJson(responseData);
+        anggotaDatas = list.AnggotaDatas.fromJson(responseData);
       });
     } on DioError catch (e) {
       if (kDebugMode) {
@@ -136,23 +139,23 @@ class _HomeViewState extends State<HomeView> {
         items: const   <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
-            label: 'Home',
+            label: 'Beranda',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.monetization_on), // Icon untuk menu pinjaman
-            label: 'Loan',
+            icon: Icon(Icons.manage_accounts), // Icon untuk menu pinjaman
+            label: 'Anggota',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history), // Icon untuk riwayat transaksi
-            label: 'History',
+            icon: Icon(Icons.monetization_on), // Icon untuk riwayat transaksi
+            label: 'Transaksi Anggota',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.bar_chart), // Icon untuk laporan keuangan
-            label: 'Report',
+            label: 'Laporan',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings), // Icon untuk pengaturan
-            label: 'Settings',
+            label: 'Pengaturan',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -160,16 +163,17 @@ class _HomeViewState extends State<HomeView> {
         selectedItemColor: GlobalColors.mainColor,
         onTap: _onItemTapped,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            // ignore: prefer_const_constructors
-            MaterialPageRoute(builder: (context) => AddAnggota()),
-          );
-        },
-        child: const Icon(Icons.add, color: Colors.pink),
-      ),
+        floatingActionButton: _selectedIndex == 1
+          ? FloatingActionButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const AddAnggota()),
+                );
+              },
+              child: const Icon(Icons.add, color: Colors.pink),
+            )
+          : null,
     );
   }
 
@@ -248,51 +252,54 @@ class _HomeViewState extends State<HomeView> {
   }
 }
 
-class TransactionHistoryView extends StatelessWidget {
-  const TransactionHistoryView({super.key});
- 
-  @override
-  Widget build(BuildContext context) {
-    // Dummy transaction list
-    final List<Transaction> transactions = [
-      Transaction(id: '1', date: '2024-04-28', amount: 500, type: TransactionType.deposit),
-      Transaction(id: '2', date: '2024-04-27', amount: 200, type: TransactionType.withdraw),
-      Transaction(id: '3', date: '2024-04-26', amount: 1000, type: TransactionType.deposit),
-      Transaction(id: '4', date: '2024-04-25', amount: 300, type: TransactionType.withdraw),
-    ];
+// class TransactionHistoryView extends StatelessWidget {
+//   const TransactionHistoryView({super.key});
 
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false, // Menghapus tombol kembali (back)
-        title: const Text('Transaction History'),
-      ),
-      body: ListView.builder(
-        itemCount: transactions.length,
-        itemBuilder: (context, index) {
-          final transaction = transactions[index];
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: transaction.type == TransactionType.deposit ? Colors.green : Colors.red,
-              child: Icon(
-                transaction.type == TransactionType.deposit ? Icons.arrow_downward : Icons.arrow_upward,
-                color: Colors.white,
-              ),
-            ),
-            title: Text('Transaction ID: ${transaction.id}'),
-            subtitle: Text('Date: ${transaction.date}'),
-            trailing: Text(
-              transaction.type == TransactionType.deposit ? '+${transaction.amount}' : '-${transaction.amount}',
-              style: TextStyle(
-                color: transaction.type == TransactionType.deposit ? Colors.green : Colors.red,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(
+//         automaticallyImplyLeading: false, // Menghapus tombol kembali (back)
+//         title: const Text('Transaksi Anggota'),
+//       ),
+//       body: Column(
+//         children: [
+//           Padding(
+//             padding: const EdgeInsets.all(8.0),
+//             child: Row(
+//               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//               children: [
+//                 ElevatedButton(
+//                   onPressed: () {
+//                     Navigator.push(
+//                       context,
+//                       MaterialPageRoute(builder: (context) => const AnggotaList()),
+//                     );
+//                   },
+//                   child: const Text('Transaksi Baru'),
+//                 ),
+//                 ElevatedButton(
+//                   onPressed: () {
+//                     Navigator.push(
+//                       context,
+//                       MaterialPageRoute(builder: (context) => const AnggotaList()),
+//                     );
+//                   },
+//                   child: const Text('Jenis Transaksi'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//           const Expanded(
+//             child: Center(
+//               child: Text('No Transactions'),
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 // Model for Transaction
 enum TransactionType { deposit, withdraw }

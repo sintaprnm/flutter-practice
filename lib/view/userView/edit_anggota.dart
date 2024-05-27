@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously, non_constant_identifier_names, no_leading_underscores_for_local_identifiers, avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application/utils/global.colors.dart';
 import 'package:flutter_application/view/home.view.dart';
@@ -9,7 +11,7 @@ import 'package:intl/intl.dart';
 class EditAnggotaPage extends StatefulWidget {
   final int anggotaId;
 
-  const EditAnggotaPage({Key? key, required this.anggotaId}) : super(key: key);
+  const EditAnggotaPage({super.key, required this.anggotaId});
 
   @override
   State<EditAnggotaPage> createState() => _EditAnggotaPageState();
@@ -28,7 +30,6 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
   final myStorage = GetStorage();
   final _apiUrl = 'https://mobileapis.manpits.xyz/api';
   DateTime? _tglLahir;
-  bool _isDetailLoaded = false;
 
   @override
   void initState() {
@@ -84,11 +85,11 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Anggota berhasil diedit!"),
-              content: Text('Yeay!'),
+              title: const Text("Anggota berhasil diedit!"),
+              content: const Text('Yeay!'),
               actions: <Widget>[
                 TextButton(
-                  child: Text("OK"),
+                  child: const Text("OK"),
                   onPressed: () {
                     Navigator.pop(context);
                     Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeView()));
@@ -103,11 +104,11 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text("Oops!"),
+              title: const Text("Oops!"),
               content: Text(e.response?.data['message'] ?? 'An error occurred'),
               actions: <Widget>[
                 TextButton(
-                  child: Text("OK"),
+                  child: const Text("OK"),
                   onPressed: () {
                     Navigator.pop(context);
                   },
@@ -137,7 +138,7 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Anggota'),
+        title: const Text('Edit Anggota'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -243,9 +244,9 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
-                          padding: EdgeInsets.symmetric(vertical: 10),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
-                        child: Text(
+                        child: const Text(
                           'Edit Anggota',
                           style: TextStyle(
                             fontFamily: 'Poppins',

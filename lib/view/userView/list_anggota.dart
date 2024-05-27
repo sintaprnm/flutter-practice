@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_brace_in_string_interps, no_leading_underscores_for_local_identifiers, non_constant_identifier_names
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/view/userView/edit_anggota.dart';
@@ -96,8 +98,6 @@ class _AnggotaListState extends State<AnggotaList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // ... other Scaffold properties
-
       body: Stack(
         children: [
           Center(
@@ -122,7 +122,7 @@ class _AnggotaListState extends State<AnggotaList> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.edit),
+                                icon: const Icon(Icons.edit, color: Colors.pink,),
                                 onPressed: () {
                                   // Navigate to edit anggota page with anggota ID
                                   Navigator.push(
@@ -134,7 +134,7 @@ class _AnggotaListState extends State<AnggotaList> {
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete_outline),
+                                icon: const Icon(Icons.delete_outline, color: Colors.pink,),
                                 onPressed: () {
                                   _confirmDeleteAnggota(anggota.id);
                                 },
