@@ -1,7 +1,9 @@
-// ignore_for_file: avoid_print, deprecated_member_use, unnecessary_brace_in_string_interps, no_leading_underscores_for_local_identifiers, non_constant_identifier_names
+// ignore_for_file: non_constant_identifier_names, no_leading_underscores_for_local_identifiers, unnecessary_brace_in_string_interps, avoid_print
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_application/utils/global.colors.dart';
+import 'package:flutter_application/view/transactionView/details_transaction.dart';
 import 'package:flutter_application/view/userView/edit_anggota.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -84,10 +86,36 @@ class _AnggotaListState extends State<AnggotaList> {
       setState(() {
         anggotaDatas = AnggotaDatas.fromJson(responseData);
       });
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       print('${e.response} - ${e.response?.statusCode}');
     }
   }
+
+  Future<void> _toggleStatus(int id, int currentStatus) async {
+    try {
+      final response = await _dio.put(
+        '$_apiUrl/anggota/$id',
+        data: {'status_aktif': currentStatus == 1 ? 0 : 1},
+        options: Options(
+          headers: {'Authorization': 'Bearer ${myStorage.read('token')}'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        // Refresh the anggota list after successful toggle
+        getAnggota();
+        print('Status anggota berhasil diubah!');
+      } else {
+        print('Gagal mengubah status anggota: ${response.data}');
+        // Handle error scenarios as needed (e.g., display error message)
+      }
+    } on DioException catch (e) {
+      // Handle Dio exceptions (e.g., network errors)
+      print('${e.response} - ${e.response?.statusCode}');
+      // Display error message to the user
+    }
+  }
+
 
   @override
   void initState() {
@@ -121,16 +149,22 @@ class _AnggotaListState extends State<AnggotaList> {
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // IconButton(
+                              //   icon: const Icon(Icons.edit, color: Colors.pink,),
+                              //   onPressed: () {
+                              //     // Navigate to edit anggota page with anggota ID
+                              //     Navigator.push(
+                              //       context,
+                              //       MaterialPageRoute(
+                              //         builder: (context) => EditAnggotaPage(anggotaId: anggota.id),
+                              //       ),
+                              //     );
+                              //   },
+                              // ),
                               IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.pink,),
+                                icon: Icon(anggota.status_aktif == 1 ? Icons.toggle_on : Icons.toggle_off, color: anggota.status_aktif == 1 ? Colors.pink : Colors.grey,),
                                 onPressed: () {
-                                  // Navigate to edit anggota page with anggota ID
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => EditAnggotaPage(anggotaId: anggota.id),
-                                    ),
-                                  );
+                                  _toggleStatus(anggota.id, anggota.status_aktif ?? 0);
                                 },
                               ),
                               IconButton(
@@ -141,43 +175,28 @@ class _AnggotaListState extends State<AnggotaList> {
                               ),
                             ],
                           ),
-                          // leading: const CircleAvatar(
-                          //   backgroundImage: AssetImage('assets/images/anggota.jpeg'),
-                          // ),
                           leading: Container(
-                            width: 50, // Sesuaikan dengan ukuran yang diinginkan
-                            height: 50, // Sesuaikan dengan ukuran yang diinginkan
+                            width: 50, 
+                            height: 50, 
                             decoration: const BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.grey, // Ganti dengan warna latar belakang yang diinginkan
+                              color: Colors.grey, 
                             ),
                             child: const Center(
                               child: Icon(
                                 Icons.account_circle,
-                                size: 30, // Sesuaikan dengan ukuran yang diinginkan
-                                color: Colors.white, // Ganti dengan warna ikon yang diinginkan
+                                size: 30, 
+                                color: Colors.white, 
                               ),
                             ),
                           ),
                           onTap: () {
-                            // Ambil ID anggota yang diklik
-                            int anggotaID = anggota.id;
-
-                            // Loop melalui data anggota yang diterima dari server
-                            for (var anggotaData in anggotaDatas!.anggotaDatas) {
-                              // Cocokkan ID anggota yang diklik dengan ID anggota dalam data
-                              if (anggotaData.id == anggotaID) {
-                                // Jika cocok, cetak detail anggota
-                                print('Detail Anggota:');
-                                print('ID: ${anggotaData.id}');
-                                print('Nomor Induk: ${anggotaData.nomor_induk}');
-                                print('Nama: ${anggotaData.nama}');
-                                print('Alamat: ${anggotaData.alamat}');
-                                print('Tanggal Lahir: ${anggotaData.tgl_lahir}');
-                                print('Telepon: ${anggotaData.telepon}');
-                                break; // Keluar dari loop setelah menemukan anggota yang cocok
-                              }
-                            }
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailAnggotaPage(anggota: anggota),
+                              ),
+                            );
                           },
                         );
                       },
@@ -235,10 +254,119 @@ class _AnggotaListState extends State<AnggotaList> {
         print('Error deleting anggota: ${response.data}');
         // Handle error scenarios as needed (e.g., display error message)
       }
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       // Handle Dio exceptions (e.g., network errors)
       print('${e.response} - ${e.response?.statusCode}');
       // Display error message to the user
     }
+  }
+}
+
+class DetailAnggotaPage extends StatelessWidget {
+  final Anggota anggota;
+
+  const DetailAnggotaPage({super.key, required this.anggota});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(anggota.nama),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildInfoRow('ID', anggota.id.toString()),
+            _buildInfoRow('Nomor Induk', anggota.nomor_induk.toString()),
+            _buildInfoRow('Nama', anggota.nama),
+            _buildInfoRow('Alamat', anggota.alamat),
+            _buildInfoRow('Tanggal Lahir', anggota.tgl_lahir),
+            _buildInfoRow('Telepon', anggota.telepon),
+            if (anggota.image_url != null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: Image.network(anggota.image_url!),
+              ),
+            _buildInfoRow('Status Aktif', anggota.status_aktif == 1 ? "Aktif" : "Tidak Aktif"),
+            const SizedBox(height: 20),
+            Column(
+              children: [
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditAnggotaPage(anggotaId: anggota.id),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: GlobalColors.mainColor,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    ),
+                    child: const Text(
+                      'Edit Profile User',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Center(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TransactionDetailPage(anggotaId: anggota.id),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: GlobalColors.mainColor,
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    ),
+                    child: const Text(
+                      'Transaksi User',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 16,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Row(
+        children: [
+          Expanded(flex: 2, child: Text(label, style: const TextStyle(fontWeight: FontWeight.bold))),
+          Expanded(flex: 3, child: Text(value)),
+        ],
+      ),
+    );
   }
 }

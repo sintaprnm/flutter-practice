@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously
+// ignore_for_file: library_private_types_in_public_api, avoid_print, use_build_context_synchronously, non_constant_identifier_names
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -36,13 +36,14 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
   late TextEditingController _nominalController;
   int MULTIPLIER_DEBIT = 1;
   int MULTIPLIER_CREDIT = -1;
-
+  bool _isSaldoAwalAllowed = true;
 
   @override
   void initState() {
     super.initState();
     _loadJenisTransaksi();
     _nominalController = TextEditingController();
+    _checkSaldoAwal();
   }
 
   Future<void> _loadJenisTransaksi() async {
@@ -62,6 +63,26 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
         });
       } else {
         print('Gagal memuat jenis transaksi.');
+      }
+    } catch (error) {
+      print('Error: $error');
+    }
+  }
+
+  Future<void> _checkSaldoAwal() async {
+    try {
+      Response response = await Dio().get(
+        'https://mobileapis.manpits.xyz/api/tabungan/${widget.anggotaId}',
+        options: Options(
+          headers: {'Authorization': 'Bearer ${_storage.read('token')}'},
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final transactions = response.data['data']['tabungan'] as List;
+        setState(() {
+          _isSaldoAwalAllowed = !transactions.any((transaction) => transaction['trx_id'] == 1); // Assuming trx_id 1 is Saldo Awal
+        });
       }
     } catch (error) {
       print('Error: $error');
@@ -107,36 +128,47 @@ class _AddTransactionFormState extends State<AddTransactionForm> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               ElevatedButton(
-                onPressed: () async {
-                  try {
-                    Response postResponse = await Dio().post(
-                      'https://mobileapis.manpits.xyz/api/tabungan',
-                      data: {
-                        'anggota_id': widget.anggotaId,
-                        'trx_id': _jenisTransaksi[_selectedTransactionIndex]['id'],
-                        'trx_nominal': double.parse(_nominalController.text),
-                        'trx_multiply': _jenisTransaksi[_selectedTransactionIndex]['trx_multiply'] == MULTIPLIER_DEBIT ? MULTIPLIER_DEBIT : MULTIPLIER_CREDIT,
-                      },
-                      options: Options(
-                        headers: {'Authorization': 'Bearer ${_storage.read('token')}'},
-                      ),
-                    );
+                onPressed: _isSaldoAwalAllowed || _jenisTransaksi[_selectedTransactionIndex]['id'] != 1
+                    ? () async {
+                        try {
+                          Response postResponse = await Dio().post(
+                            'https://mobileapis.manpits.xyz/api/tabungan',
+                            data: {
+                              'anggota_id': widget.anggotaId,
+                              'trx_id': _jenisTransaksi[_selectedTransactionIndex]['id'],
+                              'trx_nominal': double.parse(_nominalController.text),
+                              'trx_multiply': _jenisTransaksi[_selectedTransactionIndex]['trx_multiply'] == MULTIPLIER_DEBIT ? MULTIPLIER_DEBIT : MULTIPLIER_CREDIT,
+                            },
+                            options: Options(
+                              headers: {'Authorization': 'Bearer ${_storage.read('token')}'},
+                            ),
+                          );
 
-                    if (postResponse.statusCode == 200) {
-                      print('Transaksi berhasil ditambahkan');
-                      print('Detail Transaksi Baru: ${postResponse.data['data']['tabungan']}');
-                    } else {
-                      print('Gagal menambahkan transaksi');
-                    }
-                  } catch (error) {
-                    print('Error: $error');
-                  }
-                  Navigator.of(context).pop();
-                },
+                          if (postResponse.statusCode == 200) {
+                            print('Transaksi berhasil ditambahkan');
+                            print('Detail Transaksi Baru: ${postResponse.data['data']['tabungan']}');
+                          } else {
+                            print('Gagal menambahkan transaksi');
+                          }
+                          // Navigator.pop(context, true); // Kembali ke halaman sebelumnya dengan data true
+                        } catch (error) {
+                          print('Error: $error');
+                        }
+                        Navigator.of(context).pop();
+                      }
+                    : null,
                 child: const Text('Simpan'),
               ),
             ],
           ),
+          if (!_isSaldoAwalAllowed && _jenisTransaksi[_selectedTransactionIndex]['id'] == 1)
+            const Padding(
+              padding: EdgeInsets.only(top: 16.0),
+              child: Text(
+                'Saldo awal hanya bisa ditambahkan sekali.',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+              ),
+            ),
         ],
       ),
     );

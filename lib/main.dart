@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/view/home.view.dart';
 import 'package:flutter_application/view/login.view.dart';
+import 'package:flutter_application/view/transactionView/add_bunga.dart';
+import 'package:flutter_application/view/transactionView/list_bunga.dart';
 import 'package:flutter_application/view/userView/add_anggota.dart';
 import 'package:flutter_application/view/register.view.dart';
 import 'package:flutter_application/view/splash.view.dart';
@@ -39,6 +41,8 @@ class App extends StatelessWidget {
         GetPage(name: '/anggota', page: () => const AddAnggota()),
         GetPage(name: '/anggota/detail', page: () => const AnggotaList()),
         // GetPage(name: '/anggota/edit/', page: () => const EditAnggotaPage()),
+        GetPage(name: '/add_bunga', page: () => const AddBunga()),
+        GetPage(name: '/list_bunga', page: () => const ListBunga()),
       ],
     );
   }

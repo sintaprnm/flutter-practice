@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application/utils/global.colors.dart';
 import 'package:flutter_application/view/login.view.dart';
-import 'package:flutter_application/view/transactionView/transaksi_anggota.dart' as transaksi;
 import 'package:flutter_application/view/userView/list_anggota.dart' as list;
 import 'package:flutter_application/view/userView/add_anggota.dart';
 // import 'package:flutter_application/view/profile.view.dart';
@@ -33,7 +32,8 @@ class _HomeViewState extends State<HomeView> {
     // HomeListView(),
     Text('Halaman Beranda'),
     list.AnggotaList(),
-    transaksi.TransactionAnggotaList(),
+    // transaksi.TransactionAnggotaList(),
+    Text('Halaman tunggu'),
     Text('Halaman Laporan'),
     Text('Halaman Pengaturan'),
   ];

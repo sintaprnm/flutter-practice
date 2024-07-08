@@ -247,7 +247,7 @@ class _EditAnggotaPageState extends State<EditAnggotaPage> {
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                         child: const Text(
-                          'Edit Anggota',
+                          'Simpan Data Terbaru',
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 16,
